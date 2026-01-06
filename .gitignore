@@ -10,7 +10,7 @@ network/*.tar.gz
 network/**/*.tar.gz
 
 # Wallet (DO NOT COMMIT KEYS)
-backend/wallet/*.pem
+# backend/wallet/*.pem
 
 # OS / editor
 .DS_Store

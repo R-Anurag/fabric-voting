@@ -1,0 +1,181 @@
+################################################################################
+#
+#   ORGANIZATIONS
+#
+################################################################################
+
+Organizations:
+
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: /root/fabric-voting-network/organizations/fabric-ca-client/orderer/node/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+
+  - &Org1
+    Name: Org1MSP
+    ID: Org1MSP
+    MSPDir: /root/fabric-voting-network/organizations/fabric-ca-client/org1/peer0/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('Org1MSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('Org1MSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('Org1MSP.admin')"
+    AnchorPeers:
+      - Host: peer0.org1.example.com
+        Port: 7051
+
+  - &Org2
+    Name: Org2MSP
+    ID: Org2MSP
+    MSPDir: /root/fabric-voting-network/organizations/fabric-ca-client/org2/peer0/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('Org2MSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('Org2MSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('Org2MSP.admin')"
+    AnchorPeers:
+      - Host: peer0.org2.example.com
+        Port: 9051
+
+
+################################################################################
+#
+#   CAPABILITIES
+#
+################################################################################
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+
+################################################################################
+#
+#   CHANNEL DEFAULTS
+#
+################################################################################
+
+Channel: &ChannelDefaults
+  Capabilities:
+    <<: *ChannelCapabilities
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+
+################################################################################
+#
+#   APPLICATION DEFAULTS
+#
+################################################################################
+
+Application: &ApplicationDefaults
+  Organizations:
+  Capabilities:
+    <<: *ApplicationCapabilities
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+
+################################################################################
+#
+#   ORDERER DEFAULTS
+#
+################################################################################
+
+Orderer: &OrdererDefaults
+  OrdererType: solo
+  Addresses:
+    - orderer.example.com:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+  Capabilities:
+    <<: *OrdererCapabilities
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+
+
+################################################################################
+#
+#   PROFILES
+#
+################################################################################
+
+Profiles:
+
+  ElectionGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+    Consortiums:
+      ElectionConsortium:
+        Organizations:
+          - *Org1
+          - *Org2
+
+  ElectionChannel:
+    <<: *ChannelDefaults
+    Consortium: ElectionConsortium
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Org1
+        - *Org2
+      Capabilities:
+        <<: *ApplicationCapabilities

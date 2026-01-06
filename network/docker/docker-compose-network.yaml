@@ -1,0 +1,89 @@
+version: '3.7'
+
+networks:
+  fabric_net:
+
+services:
+
+  orderer.example.com:
+    image: hyperledger/fabric-orderer:2.4.9
+    container_name: orderer.example.com
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=file
+      - ORDERER_GENERAL_BOOTSTRAPFILE=/var/hyperledger/orderer/genesis.block
+    volumes:
+      - ../channel-artifacts/genesis.block:/var/hyperledger/orderer/genesis.block
+      - ../organizations/fabric-ca-client/orderer/node/msp:/var/hyperledger/orderer/msp
+    ports:
+      - "7050:7050"
+    networks:
+      - fabric_net
+
+  peer0.org1.example.com:
+    image: hyperledger/fabric-peer:2.5.4
+    container_name: peer0.org1.example.com
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+
+      - CORE_PEER_ID=peer0.org1.example.com
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+
+      # 🔑 INTERNAL vs EXTERNAL FIX
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=localhost:7051
+
+      # 🔑 CHAINCODE COMM FIX (CRITICAL)
+      - CORE_PEER_CHAINCODEADDRESS=localhost:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/peer/msp
+
+    volumes:
+      - ../organizations/fabric-ca-client/org1/peer0/msp:/var/hyperledger/peer/msp
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "7051:7051"
+      - "7052:7052"
+    depends_on:
+      - orderer.example.com
+    networks:
+      - fabric_net
+
+  peer0.org2.example.com:
+    image: hyperledger/fabric-peer:2.5.4
+    container_name: peer0.org2.example.com
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+
+      - CORE_PEER_ID=peer0.org2.example.com
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+
+      # 🔑 INTERNAL vs EXTERNAL FIX
+      - CORE_PEER_ADDRESS=peer0.org2.example.com:9051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=localhost:9051
+
+      # 🔑 CHAINCODE COMM FIX (CRITICAL)
+      - CORE_PEER_CHAINCODEADDRESS=localhost:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/peer/msp
+
+    volumes:
+      - ../organizations/fabric-ca-client/org2/peer0/msp:/var/hyperledger/peer/msp
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9051:9051"
+      - "9052:9052"
+    depends_on:
+      - orderer.example.com
+    networks:
+      - fabric_net

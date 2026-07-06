@@ -9,6 +9,8 @@ cd "$SCRIPT_DIR"
 docker compose \
   -f docker/docker-compose-ca.yaml \
   -f docker/docker-compose-network.yaml \
-  down -v --remove-orphans
+  down --remove-orphans
 
-echo "✅ Fabric network stopped & cleaned"
+docker rm -f fabric-enroll fabric-channel fabric-deploy fabric-configtxgen 2>/dev/null || true
+
+echo "✅ Fabric network stopped"

@@ -9,7 +9,7 @@ Organizations:
   - &OrdererOrg
     Name: OrdererOrg
     ID: OrdererMSP
-    MSPDir: /root/fabric-voting-network/organizations/fabric-ca-client/orderer/node/msp
+    MSPDir: /network/organizations/fabric-ca-client/orderer/msp
     Policies:
       Readers:
         Type: Signature
@@ -24,7 +24,7 @@ Organizations:
   - &Org1
     Name: Org1MSP
     ID: Org1MSP
-    MSPDir: /root/fabric-voting-network/organizations/fabric-ca-client/org1/peer0/msp
+    MSPDir: /network/organizations/fabric-ca-client/org1/msp
     Policies:
       Readers:
         Type: Signature
@@ -35,6 +35,9 @@ Organizations:
       Admins:
         Type: Signature
         Rule: "OR('Org1MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('Org1MSP.peer')"
     AnchorPeers:
       - Host: peer0.org1.example.com
         Port: 7051
@@ -42,7 +45,7 @@ Organizations:
   - &Org2
     Name: Org2MSP
     ID: Org2MSP
-    MSPDir: /root/fabric-voting-network/organizations/fabric-ca-client/org2/peer0/msp
+    MSPDir: /network/organizations/fabric-ca-client/org2/msp
     Policies:
       Readers:
         Type: Signature
@@ -53,6 +56,9 @@ Organizations:
       Admins:
         Type: Signature
         Rule: "OR('Org2MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('Org2MSP.peer')"
     AnchorPeers:
       - Host: peer0.org2.example.com
         Port: 9051
@@ -179,3 +185,19 @@ Profiles:
         - *Org2
       Capabilities:
         <<: *ApplicationCapabilities
+      Policies:
+        Readers:
+          Type: ImplicitMeta
+          Rule: "ANY Readers"
+        Writers:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+        Admins:
+          Type: ImplicitMeta
+          Rule: "MAJORITY Admins"
+        LifecycleEndorsement:
+          Type: ImplicitMeta
+          Rule: "ANY Endorsement"
+        Endorsement:
+          Type: ImplicitMeta
+          Rule: "MAJORITY Endorsement"

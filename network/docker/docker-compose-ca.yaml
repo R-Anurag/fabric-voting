@@ -1,7 +1,8 @@
 version: '3.7'
 
 networks:
-  fabric_net:
+  evoting_net:
+    external: true
 
 services:
 
@@ -18,7 +19,7 @@ services:
     volumes:
       - ../organizations/ca/orderer:/etc/hyperledger/fabric-ca-server
     networks:
-      - fabric_net
+      - evoting_net
 
   ca_org1:
     image: hyperledger/fabric-ca:1.5.15
@@ -33,7 +34,7 @@ services:
     volumes:
       - ../organizations/ca/org1:/etc/hyperledger/fabric-ca-server
     networks:
-      - fabric_net
+      - evoting_net
 
   ca_org2:
     image: hyperledger/fabric-ca:1.5.15
@@ -48,4 +49,4 @@ services:
     volumes:
       - ../organizations/ca/org2:/etc/hyperledger/fabric-ca-server
     networks:
-      - fabric_net
+      - evoting_net

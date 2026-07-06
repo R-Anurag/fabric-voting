@@ -3,33 +3,41 @@ set -e
 
 echo "🔹 Creating channel..."
 
-# Always run from network root
-SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$SCRIPT_DIR"
+cd /network
 
-export FABRIC_CFG_PATH=$PWD/config
-
-# -------- Org1 Admin Context --------
+export FABRIC_CFG_PATH=/network/config
 export CORE_PEER_LOCALMSPID=Org1MSP
-export CORE_PEER_MSPCONFIGPATH=$PWD/organizations/fabric-ca-client/org1/admin/msp
-export CORE_PEER_ADDRESS=localhost:7051
+export CORE_PEER_MSPCONFIGPATH=/network/organizations/fabric-ca-client/org1/admin/msp
+export CORE_PEER_ADDRESS=peer0.org1.example.com:7051
 
-# Create channel block
+# Wait for orderer to be reachable
+echo "⏳ Waiting for orderer..."
+until peer channel list -o orderer.example.com:7050 2>&1 | grep -v "Error\|failed" > /dev/null 2>&1 || \
+      peer channel list -o orderer.example.com:7050 2>&1 | grep -q "Channels peers has joined"; do
+  sleep 3
+done
+echo "✅ Orderer ready"
+
+# Wait for peer
+echo "⏳ Waiting for peer..."
+until peer channel list > /dev/null 2>&1; do sleep 3; done
+echo "✅ Peer ready"
+
+# Create channel
 peer channel create \
-  -o localhost:7050 \
+  -o orderer.example.com:7050 \
   -c election-channel \
-  -f config/channel.tx \
-  --outputBlock channel-artifacts/election-channel.block
+  -f /network/channel-artifacts/channel.tx \
+  --outputBlock /network/channel-artifacts/election-channel.block
 
 # Join Org1 peer
-peer channel join -b channel-artifacts/election-channel.block
+peer channel join -b /network/channel-artifacts/election-channel.block
 
-# -------- Org2 Admin Context --------
+# Org2
 export CORE_PEER_LOCALMSPID=Org2MSP
-export CORE_PEER_MSPCONFIGPATH=$PWD/organizations/fabric-ca-client/org2/admin/msp
-export CORE_PEER_ADDRESS=localhost:9051
+export CORE_PEER_MSPCONFIGPATH=/network/organizations/fabric-ca-client/org2/admin/msp
+export CORE_PEER_ADDRESS=peer0.org2.example.com:9051
 
-# Join Org2 peer
-peer channel join -b channel-artifacts/election-channel.block
+peer channel join -b /network/channel-artifacts/election-channel.block
 
 echo "✅ Channel created and peers joined"

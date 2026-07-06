@@ -11,22 +11,22 @@ const __dirname = path.dirname(__filename);
 const channelName = "election-channel";
 const chaincodeName = "voting";
 
-// Wallet paths
 const walletPath = path.join(__dirname, "../wallet");
 const certPath = path.join(walletPath, "admin-cert.pem");
 const keyPath = path.join(walletPath, "admin-key.pem");
 
+const peerEndpoint = process.env.PEER_ENDPOINT || "localhost:7051";
+const asLocalhost = process.env.AS_LOCALHOST !== "false";
+
 export async function getContract() {
-    // Load identity
     const certificate = fs.readFileSync(certPath);
     const privateKeyPem = fs.readFileSync(keyPath);
 
     const privateKey = crypto.createPrivateKey(privateKeyPem);
     const signer = signers.newPrivateKeySigner(privateKey);
 
-    // Connect to Org1 peer
     const client = new grpc.Client(
-        "localhost:7051",
+        peerEndpoint,
         grpc.credentials.createInsecure()
     );
 
@@ -37,10 +37,9 @@ export async function getContract() {
             credentials: certificate,
         },
         signer,
-        // 🔥 CRITICAL: ENABLE DISCOVERY
         discovery: {
             enabled: true,
-            asLocalhost: true,
+            asLocalhost,
         },
     });
 

@@ -1,7 +1,8 @@
 version: '3.7'
 
 networks:
-  fabric_net:
+  evoting_net:
+    external: true
 
 services:
 
@@ -22,7 +23,7 @@ services:
     ports:
       - "7050:7050"
     networks:
-      - fabric_net
+      - evoting_net
 
   peer0.org1.example.com:
     image: hyperledger/fabric-peer:2.5.4
@@ -36,10 +37,10 @@ services:
       # 🔑 INTERNAL vs EXTERNAL FIX
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=localhost:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
 
       # 🔑 CHAINCODE COMM FIX (CRITICAL)
-      - CORE_PEER_CHAINCODEADDRESS=localhost:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.example.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
 
       - CORE_PEER_LOCALMSPID=Org1MSP
@@ -54,7 +55,7 @@ services:
     depends_on:
       - orderer.example.com
     networks:
-      - fabric_net
+      - evoting_net
 
   peer0.org2.example.com:
     image: hyperledger/fabric-peer:2.5.4
@@ -68,10 +69,10 @@ services:
       # 🔑 INTERNAL vs EXTERNAL FIX
       - CORE_PEER_ADDRESS=peer0.org2.example.com:9051
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:9051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=localhost:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.example.com:9051
 
       # 🔑 CHAINCODE COMM FIX (CRITICAL)
-      - CORE_PEER_CHAINCODEADDRESS=localhost:9052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org2.example.com:9052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
 
       - CORE_PEER_LOCALMSPID=Org2MSP
@@ -86,4 +87,4 @@ services:
     depends_on:
       - orderer.example.com
     networks:
-      - fabric_net
+      - evoting_net
